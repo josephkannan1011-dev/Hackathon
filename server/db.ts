@@ -84,8 +84,10 @@ export function loadDatabase(): DatabaseSchema {
         priority: 'high',
         priorityScore: 78,
         severity: 4,
-        gps: { lat: 13.0850, lng: 80.2720 },
-        address: '12 Main St, Near Central Station, Chennai',
+        gps: { lat: 13.0827, lng: 80.2707 },
+        address: '12 Main St, Near Central Station, Chennai, Tamil Nadu',
+        state: 'Tamil Nadu',
+        district: 'Chennai',
         createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
         updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         isEmergency: false,
@@ -109,8 +111,10 @@ export function loadDatabase(): DatabaseSchema {
         priority: 'medium',
         priorityScore: 52,
         severity: 3,
-        gps: { lat: 13.0805, lng: 80.2780 },
-        address: '45 Gandhi Nagar, Commercial Block, Chennai',
+        gps: { lat: 28.6139, lng: 77.2090 },
+        address: '45 Connaught Place, Commercial Block, New Delhi',
+        state: 'Delhi',
+        district: 'New Delhi',
         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
         updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         isEmergency: false,
@@ -133,8 +137,10 @@ export function loadDatabase(): DatabaseSchema {
         priority: 'critical',
         priorityScore: 98,
         severity: 5,
-        gps: { lat: 13.0835, lng: 80.2690 },
-        address: 'St. Mary School Gate, Park Street, Chennai',
+        gps: { lat: 19.0760, lng: 72.8777 },
+        address: 'Marine Drive Pathway near Gate 3, Mumbai, Maharashtra',
+        state: 'Maharashtra',
+        district: 'Mumbai City',
         createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
         updatedAt: new Date(Date.now() - 2.5 * 60 * 60 * 1000).toISOString(),
         isEmergency: true,
@@ -157,8 +163,10 @@ export function loadDatabase(): DatabaseSchema {
         priority: 'medium',
         priorityScore: 65,
         severity: 3,
-        gps: { lat: 13.0760, lng: 80.2610 },
-        address: 'Opposite Metro Station Pillar 120, Chennai',
+        gps: { lat: 12.9716, lng: 77.5946 },
+        address: 'Opposite Metro Station Pillar 120, MG Road, Bengaluru, Karnataka',
+        state: 'Karnataka',
+        district: 'Bengaluru Urban',
         createdAt: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(), // 36 hours ago (Exceeds medium SLA 24h! Will trigger escalation!)
         updatedAt: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
         isEmergency: false,
@@ -208,7 +216,45 @@ export function loadDatabase(): DatabaseSchema {
 
   try {
     const data = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(data) as DatabaseSchema;
+    const db = JSON.parse(data) as DatabaseSchema;
+
+    // Database Migration Step: Ensure every single complaint in db.json contains valid state and district attributes
+    let dbChanged = false;
+    db.complaints = db.complaints.map(c => {
+      let pinChanged = false;
+      if (!c.state) {
+        if (c.address?.toLowerCase().includes('delhi')) {
+          c.state = 'Delhi';
+        } else if (c.address?.toLowerCase().includes('mumbai') || c.address?.toLowerCase().includes('maharashtra')) {
+          c.state = 'Maharashtra';
+        } else if (c.address?.toLowerCase().includes('bengaluru') || c.address?.toLowerCase().includes('karnataka') || c.address?.toLowerCase().includes('bangalore')) {
+          c.state = 'Karnataka';
+        } else {
+          c.state = 'Tamil Nadu'; // Fallback seed state
+        }
+        pinChanged = true;
+      }
+      if (!c.district) {
+        if (c.address?.toLowerCase().includes('new delhi') || c.address?.toLowerCase().includes('connaught place')) {
+          c.district = 'New Delhi';
+        } else if (c.address?.toLowerCase().includes('mumbai')) {
+          c.district = 'Mumbai City';
+        } else if (c.address?.toLowerCase().includes('bengaluru') || c.address?.toLowerCase().includes('bangalore')) {
+          c.district = 'Bengaluru Urban';
+        } else {
+          c.district = 'Chennai'; // Fallback seed district
+        }
+        pinChanged = true;
+      }
+      if (pinChanged) dbChanged = true;
+      return c;
+    });
+
+    if (dbChanged) {
+      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf-8');
+    }
+
+    return db;
   } catch (error) {
     console.error('Error reading database file, resetting...', error);
     // Return empty schema if corrupted

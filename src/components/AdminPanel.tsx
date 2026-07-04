@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Shield, AlertTriangle, Users, FileText, ArrowRight, Settings, Clock, RefreshCw, Layers, ShieldCheck } from 'lucide-react';
+import { Shield, AlertTriangle, Users, FileText, ArrowRight, Settings, Clock, RefreshCw, Layers, ShieldCheck, Filter } from 'lucide-react';
 import { Complaint, Department, AuditLog } from '../types';
 import AnalyticsDashboard from './AnalyticsDashboard';
+import VirtualMap from './VirtualMap';
 
 interface AdminPanelProps {
   token: string;
@@ -31,6 +32,34 @@ export default function AdminPanel({
   const [timeAdvanceHours, setTimeAdvanceHours] = useState<number>(12);
   const [advanceLoading, setAdvanceLoading] = useState<boolean>(false);
   const [advanceResults, setAdvanceResults] = useState<{ escalatedCount: number; details: string[] } | null>(null);
+
+  // Filter Selection States
+  const [filterState, setFilterState] = useState<string>('');
+  const [filterDistrict, setFilterDistrict] = useState<string>('');
+  const [filterDept, setFilterDept] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
+
+  // Derived filtering criteria lists
+  const availableStates = Array.from(new Set(complaints.map(c => c.state).filter(Boolean))) as string[];
+  const availableDistricts = Array.from(
+    new Set(
+      complaints
+        .filter(c => !filterState || c.state === filterState)
+        .map(c => c.district)
+        .filter(Boolean)
+    )
+  ) as string[];
+  const availableDepts = Array.from(new Set(complaints.map(c => c.departmentId).filter(Boolean))) as string[];
+  const availableStatuses = Array.from(new Set(complaints.map(c => c.status).filter(Boolean))) as string[];
+
+  // Execute filtering criteria
+  const filteredComplaints = complaints.filter(c => {
+    if (filterState && c.state !== filterState) return false;
+    if (filterDistrict && c.district !== filterDistrict) return false;
+    if (filterDept && c.departmentId !== filterDept) return false;
+    if (filterStatus && c.status !== filterStatus) return false;
+    return true;
+  });
 
   const handleReassign = async (complaintId: string) => {
     if (!selectedDeptId) return;
@@ -175,7 +204,7 @@ export default function AdminPanel({
           onClick={() => setActiveTab('complaints')}
           className={`pb-2.5 px-4 transition-all border-b-2 cursor-pointer ${activeTab === 'complaints' ? 'border-sky-400 text-sky-400 font-bold' : 'border-transparent text-slate-400 hover:text-white'}`}
         >
-          All Complaints Ledger ({complaints.length})
+          All Complaints Ledger ({filteredComplaints.length} / {complaints.length})
         </button>
         <button
           onClick={() => setActiveTab('escalations')}
@@ -197,32 +226,140 @@ export default function AdminPanel({
       )}
 
       {activeTab === 'complaints' && (
-        <div className="glass-panel rounded-2xl overflow-hidden shadow-xl text-slate-100">
-          <div className="p-4 bg-white/5 border-b border-white/10 flex items-center justify-between">
-            <h4 className="font-semibold text-white text-xs font-display">Citizen Complaint Directory</h4>
-            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider font-mono">Anonymous IDs Mapping enabled</span>
+        <div className="space-y-6">
+          {/* 1. National GIS Complaint Visualization & Filter Controls */}
+          <div className="glass-panel rounded-2xl p-4 shadow-xl text-slate-100 space-y-4">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div className="space-y-0.5">
+                <h4 className="font-semibold text-white text-sm flex items-center gap-1.5 font-display">
+                  <Filter className="w-4 h-4 text-sky-400" />
+                  National GIS Grievance Visualizer
+                </h4>
+                <p className="text-[10px] text-slate-400 font-medium">Real-time geographical distribution of citizen complaints across India</p>
+              </div>
+
+              {/* Dynamic Filters panel */}
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                {/* State dropdown */}
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[9px] uppercase tracking-wider text-slate-500 font-mono">State</span>
+                  <select
+                    value={filterState}
+                    onChange={(e) => {
+                      setFilterState(e.target.value);
+                      setFilterDistrict(''); // Reset district if state changes
+                    }}
+                    className="bg-slate-900 border border-white/10 text-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-medium outline-none cursor-pointer"
+                  >
+                    <option value="" className="bg-slate-950">All States</option>
+                    {availableStates.map(s => (
+                      <option key={s} value={s} className="bg-slate-950">{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* District dropdown */}
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[9px] uppercase tracking-wider text-slate-500 font-mono">District</span>
+                  <select
+                    value={filterDistrict}
+                    onChange={(e) => setFilterDistrict(e.target.value)}
+                    className="bg-slate-900 border border-white/10 text-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-medium outline-none cursor-pointer"
+                  >
+                    <option value="" className="bg-slate-950">All Districts</option>
+                    {availableDistricts.map(d => (
+                      <option key={d} value={d} className="bg-slate-950">{d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Department dropdown */}
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[9px] uppercase tracking-wider text-slate-500 font-mono">Department</span>
+                  <select
+                    value={filterDept}
+                    onChange={(e) => setFilterDept(e.target.value)}
+                    className="bg-slate-900 border border-white/10 text-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-medium outline-none cursor-pointer"
+                  >
+                    <option value="" className="bg-slate-950">All Departments</option>
+                    {availableDepts.map(d => (
+                      <option key={d} value={d} className="bg-slate-950">{d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Status dropdown */}
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[9px] uppercase tracking-wider text-slate-500 font-mono">Complaint Status</span>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="bg-slate-900 border border-white/10 text-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-medium outline-none cursor-pointer"
+                  >
+                    <option value="" className="bg-slate-950">All Statuses</option>
+                    {availableStatuses.map(s => (
+                      <option key={s} value={s} className="bg-slate-950">{s.replace('_', ' ').toUpperCase()}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Clear Filter button */}
+                {(filterState || filterDistrict || filterDept || filterStatus) && (
+                  <button
+                    onClick={() => {
+                      setFilterState('');
+                      setFilterDistrict('');
+                      setFilterDept('');
+                      setFilterStatus('');
+                    }}
+                    className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 px-3 py-1.5 text-[10px] rounded-lg cursor-pointer transition-colors mt-4 shrink-0 font-bold self-end"
+                  >
+                    Clear Filter HUD
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-slate-950/20">
+              <VirtualMap
+                complaints={filteredComplaints}
+                onSelectComplaint={onSelectComplaint}
+                height="h-[400px]"
+              />
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-white/10 text-slate-400 uppercase tracking-wider font-mono text-[9px] font-bold bg-white/5">
-                  <th className="py-3 px-4">Dossier ID</th>
-                  <th className="py-3 px-4">Title & Site</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-center">Priority</th>
-                  <th className="py-3 px-4">Escalation</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 text-slate-300 font-medium">
-                {complaints.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500 italic">No complaints reported yet.</td>
+          {/* 2. Complaints Ledger Directory Table */}
+          <div className="glass-panel rounded-2xl overflow-hidden shadow-xl text-slate-100">
+            <div className="p-4 bg-white/5 border-b border-white/10 flex items-center justify-between">
+              <h4 className="font-semibold text-white text-xs font-display">Citizen Complaint Directory</h4>
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider font-mono">
+                Showing {filteredComplaints.length} of {complaints.length} cases
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400 uppercase tracking-wider font-mono text-[9px] font-bold bg-white/5">
+                    <th className="py-3 px-4">Dossier ID</th>
+                    <th className="py-3 px-4">Title & Site</th>
+                    <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4 text-center">Priority</th>
+                    <th className="py-3 px-4">Escalation</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
-                ) : (
-                  complaints.map((c) => (
+                </thead>
+                <tbody className="divide-y divide-white/5 text-slate-300 font-medium">
+                  {filteredComplaints.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-slate-500 italic">
+                        {complaints.length === 0 ? 'No complaints reported yet.' : 'No complaints match the selected filter criteria.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredComplaints.map((c) => (
                     <tr key={c.id} className="hover:bg-white/2 transition-colors">
                       <td className="py-3 px-4 font-mono font-bold text-white">{c.id}</td>
                       <td className="py-3 px-4 max-w-sm">
@@ -305,6 +442,7 @@ export default function AdminPanel({
             </table>
           </div>
         </div>
+      </div>
       )}
 
       {activeTab === 'escalations' && (

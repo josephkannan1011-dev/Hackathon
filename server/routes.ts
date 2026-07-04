@@ -190,7 +190,7 @@ apiRouter.post('/complaints/check-duplicate', authMiddleware, (req: Authenticate
 
 // Create Complaint
 apiRouter.post('/complaints', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { title, description, category, gps, address, photoUrl, videoUrl, voiceUrl, isEmergency } = req.body;
+  const { title, description, category, gps, address, state, district, photoUrl, videoUrl, voiceUrl, isEmergency } = req.body;
 
   if (!title || !description || !gps || !address) {
     res.status(400).json({ error: 'Title, description, GPS, and address are required' });
@@ -254,6 +254,8 @@ apiRouter.post('/complaints', authMiddleware, async (req: AuthenticatedRequest, 
     severity: aiResult.severity,
     gps,
     address,
+    state,
+    district,
     photoUrl,
     videoUrl,
     voiceUrl,

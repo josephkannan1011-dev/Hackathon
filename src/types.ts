@@ -26,6 +26,8 @@ export interface Complaint {
     lng: number;
   };
   address?: string;
+  state?: string;
+  district?: string;
   createdAt: string;
   updatedAt: string;
   isEmergency: boolean;

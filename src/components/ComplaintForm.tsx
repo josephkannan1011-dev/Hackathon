@@ -21,21 +21,32 @@ const CATEGORIES = [
   'Agriculture & Rural Development'
 ];
 
-const CHENNAI_NEIGHBORHOODS = [
-  { name: 'Anna Nagar', lat: 13.0850, lng: 80.2100 },
-  { name: 'T Nagar', lat: 13.0418, lng: 80.2341 },
-  { name: 'T-Nagar', lat: 13.0418, lng: 80.2341 },
-  { name: 'Guindy', lat: 13.0067, lng: 80.2206 },
-  { name: 'Marina Beach', lat: 13.0475, lng: 80.2824 },
-  { name: 'Adyar', lat: 13.0012, lng: 80.2565 },
-  { name: 'Mylapore', lat: 13.0330, lng: 80.2685 },
-  { name: 'Nungambakkam', lat: 13.0601, lng: 80.2442 },
-  { name: 'Velachery', lat: 12.9790, lng: 80.2190 },
-  { name: 'Chromepet', lat: 12.9431, lng: 80.1412 },
-  { name: 'Central Station', lat: 13.0827, lng: 80.2707 },
-  { name: 'Chennai Central', lat: 13.0827, lng: 80.2707 },
-  { name: 'Gandhi Nagar', lat: 13.0805, lng: 80.2780 },
-  { name: 'Park Street', lat: 13.0835, lng: 80.2690 }
+const INDIA_LANDMARKS = [
+  { name: 'New Delhi', lat: 28.6139, lng: 77.2090 },
+  { name: 'Delhi', lat: 28.6139, lng: 77.2090 },
+  { name: 'Mumbai', lat: 19.0760, lng: 72.8777 },
+  { name: 'Kolkata', lat: 22.5726, lng: 88.3639 },
+  { name: 'Chennai', lat: 13.0827, lng: 80.2707 },
+  { name: 'Bengaluru', lat: 12.9716, lng: 77.5946 },
+  { name: 'Bangalore', lat: 12.9716, lng: 77.5946 },
+  { name: 'Hyderabad', lat: 17.3850, lng: 78.4867 },
+  { name: 'Ahmedabad', lat: 23.0225, lng: 72.5714 },
+  { name: 'Pune', lat: 18.5204, lng: 73.8567 },
+  { name: 'Jaipur', lat: 26.9124, lng: 75.7873 },
+  { name: 'Lucknow', lat: 26.8467, lng: 80.9462 },
+  { name: 'Patna', lat: 25.5941, lng: 85.1376 },
+  { name: 'Bhopal', lat: 23.2599, lng: 77.4126 },
+  { name: 'Guwahati', lat: 26.1445, lng: 91.7362 },
+  { name: 'Srinagar', lat: 34.0837, lng: 74.7973 },
+  { name: 'Kochi', lat: 9.9312, lng: 76.2673 },
+  { name: 'Cochin', lat: 9.9312, lng: 76.2673 },
+  { name: 'Bhubaneswar', lat: 20.2961, lng: 85.8245 },
+  { name: 'Goa', lat: 15.2993, lng: 74.1240 },
+  { name: 'Indore', lat: 22.7196, lng: 75.8577 },
+  { name: 'Kanpur', lat: 26.4499, lng: 80.3319 },
+  { name: 'Nagpur', lat: 21.1458, lng: 79.0882 },
+  { name: 'Visakhapatnam', lat: 17.6868, lng: 83.2185 },
+  { name: 'Vizag', lat: 17.6868, lng: 83.2185 }
 ];
 
 export default function ComplaintForm({
@@ -48,8 +59,10 @@ export default function ComplaintForm({
   const [title, setTitle] = useState(prefilledData?.title || '');
   const [description, setDescription] = useState(prefilledData?.description || '');
   const [category, setCategory] = useState(prefilledData?.category || CATEGORIES[0]);
-  const [gps, setGps] = useState<{ lat: number; lng: number }>({ lat: 13.0827, lng: 80.2707 }); // Chennai default center
-  const [address, setAddress] = useState('Central District Gate, Chennai');
+  const [gps, setGps] = useState<{ lat: number; lng: number }>({ lat: 28.6139, lng: 77.2090 }); // New Delhi default center
+  const [address, setAddress] = useState('Central District Gate, New Delhi');
+  const [state, setState] = useState<string>('Delhi');
+  const [district, setDistrict] = useState<string>('New Delhi');
   const [photoUrl, setPhotoUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [voiceUrl, setVoiceUrl] = useState('');
@@ -65,29 +78,33 @@ export default function ComplaintForm({
 
   // Simulated GPS Geolocation grabber
   const handleAutoGPS = () => {
-    // Generate slight noise around central coordinate to represent citizen's actual location
-    const latNoise = (Math.random() - 0.5) * 0.015;
-    const lngNoise = (Math.random() - 0.5) * 0.015;
-    const newGps = { lat: parseFloat((13.0827 + latNoise).toFixed(5)), lng: parseFloat((80.2707 + lngNoise).toFixed(5)) };
+    // Generate slight noise around central coordinate (New Delhi)
+    const latNoise = (Math.random() - 0.5) * 1.5;
+    const lngNoise = (Math.random() - 0.5) * 1.5;
+    const newGps = { lat: parseFloat((28.6139 + latNoise).toFixed(5)), lng: parseFloat((77.2090 + lngNoise).toFixed(5)) };
     
     setGps(newGps);
     
-    const avenues = ['Arcot Rd', 'Anna Salai', 'OMR Road', 'GST Expressway', 'Rajaji Rd', 'Cathedral Rd'];
+    const avenues = ['MG Road', 'Gandhi Path', 'Ring Road', 'National Highway Link', 'Central Expressway', 'Metro Pillar Avenue'];
     const randomAve = avenues[Math.floor(Math.random() * avenues.length)];
-    setAddress(`Building ${Math.floor(Math.random() * 120 + 1)}, ${randomAve}, Sector 4, Chennai`);
+    setAddress(`Building ${Math.floor(Math.random() * 120 + 1)}, ${randomAve}, Sector 4, New Delhi`);
+    setState('Delhi');
+    setDistrict('New Delhi');
     setError(null);
   };
 
-  const handleMapLocationPicked = (coords: { lat: number; lng: number }, selectedAddress: string) => {
+  const handleMapLocationPicked = (coords: { lat: number; lng: number }, selectedAddress: string, stateName?: string, districtName?: string) => {
     setGps(coords);
     setAddress(selectedAddress);
+    if (stateName) setState(stateName);
+    if (districtName) setDistrict(districtName);
     setError(null);
   };
 
   const handleAddressChange = (val: string) => {
     setAddress(val);
     const lower = val.toLowerCase();
-    const match = CHENNAI_NEIGHBORHOODS.find(n => lower.includes(n.name.toLowerCase()));
+    const match = INDIA_LANDMARKS.find(n => lower.includes(n.name.toLowerCase()));
     if (match) {
       setGps({ lat: match.lat, lng: match.lng });
     }
@@ -114,6 +131,8 @@ export default function ComplaintForm({
         category,
         gps,
         address,
+        state,
+        district,
         photoUrl: photoUrl || undefined,
         videoUrl: videoUrl || undefined,
         voiceUrl: voiceUrl || undefined,
@@ -355,13 +374,13 @@ export default function ComplaintForm({
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                     <span>Active GPS Sync: <strong className="text-slate-200 font-mono">{gps.lat.toFixed(4)}°N, {gps.lng.toFixed(4)}°E</strong></span>
                   </div>
-                  {CHENNAI_NEIGHBORHOODS.some(n => address.toLowerCase().includes(n.name.toLowerCase())) ? (
+                  {INDIA_LANDMARKS.some(n => address.toLowerCase().includes(n.name.toLowerCase())) ? (
                     <span className="text-sky-400 font-semibold text-[10px] bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">
                       📍 Landmark Synced!
                     </span>
                   ) : (
                     <span className="text-slate-500 text-[10px]">
-                      Type areas (e.g. "Adyar", "Mylapore", "T Nagar") to auto-snap GPS coordinates.
+                      Type major cities (e.g. "Mumbai", "Delhi", "Bengaluru", "Kolkata") to auto-snap GPS coordinates.
                     </span>
                   )}
                 </div>

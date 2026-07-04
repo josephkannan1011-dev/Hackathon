@@ -35,9 +35,11 @@ export default function CitizenPortal({
   const triggerQuickEmergency = async (title: string, category: string) => {
     setEmergencyLoading(title);
     try {
-      // Chennai central mock coordinate
-      const emergencyGps = { lat: 13.0827, lng: 80.2707 };
-      const emergencyAddress = 'Near General Central Metro Interchange, Chennai';
+      // India-wide coordinate
+      const emergencyGps = { lat: 28.6139, lng: 77.2090 };
+      const emergencyAddress = 'Near Central Metro Interchange, New Delhi';
+      const emergencyState = 'Delhi';
+      const emergencyDistrict = 'New Delhi';
 
       const payload = {
         title: `🚨 Emergency: ${title}`,
@@ -45,6 +47,8 @@ export default function CitizenPortal({
         category,
         gps: emergencyGps,
         address: emergencyAddress,
+        state: emergencyState,
+        district: emergencyDistrict,
         isEmergency: true,
         ignoreDuplicate: true // Emergencies bypass duplicates for safety
       };
