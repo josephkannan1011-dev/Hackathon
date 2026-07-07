@@ -190,6 +190,11 @@ apiRouter.post('/complaints/check-duplicate', authMiddleware, (req: Authenticate
 
 // Create Complaint
 apiRouter.post('/complaints', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  if (req.user!.role !== 'citizen') {
+    res.status(403).json({ error: 'Official accounts cannot register citizen complaints. Please use a registered Citizen account or personal account.' });
+    return;
+  }
+
   const { title, description, category, gps, address, state, district, photoUrl, videoUrl, voiceUrl, isEmergency } = req.body;
 
   if (!title || !description || !gps || !address) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, AlertTriangle, Users, FileText, ArrowRight, Settings, Clock, RefreshCw, Layers, ShieldCheck, Filter } from 'lucide-react';
 import { Complaint, Department, AuditLog } from '../types';
 import AnalyticsDashboard from './AnalyticsDashboard';
@@ -11,6 +11,7 @@ interface AdminPanelProps {
   departments: Department[];
   onRefreshData: () => void;
   onSelectComplaint: (id: string) => void;
+  overrideActiveTab?: 'overview' | 'assignments';
 }
 
 export default function AdminPanel({
@@ -20,8 +21,17 @@ export default function AdminPanel({
   departments,
   onRefreshData,
   onSelectComplaint,
+  overrideActiveTab,
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'analytics' | 'complaints' | 'escalations' | 'logs'>('analytics');
+
+  useEffect(() => {
+    if (overrideActiveTab === 'overview') {
+      setActiveTab('analytics');
+    } else if (overrideActiveTab === 'assignments') {
+      setActiveTab('complaints');
+    }
+  }, [overrideActiveTab]);
   
   // Reassignment states
   const [reassigningId, setReassigningId] = useState<string | null>(null);

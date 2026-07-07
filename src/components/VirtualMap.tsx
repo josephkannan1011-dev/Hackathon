@@ -98,6 +98,16 @@ export default function VirtualMap({
     };
   }, []);
 
+  // Force map invalidation/resizing on container changes
+  useEffect(() => {
+    if (leafletMapRef.current) {
+      const timer = setTimeout(() => {
+        leafletMapRef.current?.invalidateSize();
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [height, complaints]);
+
   // 2. Fly to Picked Coordinates if updated
   useEffect(() => {
     if (leafletMapRef.current && pickedGps) {

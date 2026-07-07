@@ -76,6 +76,36 @@ export default function ComplaintForm({
   const [duplicateFound, setDuplicateFound] = useState<boolean>(false);
   const [existingComplaint, setExistingComplaint] = useState<Complaint | null>(null);
 
+  // Decode user role from token safely
+  const getRoleFromToken = (tok: string) => {
+    try {
+      const base64Url = tok.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload).role;
+    } catch (e) {
+      return 'citizen';
+    }
+  };
+
+  const userRole = getRoleFromToken(token);
+
+  if (userRole === 'officer' || userRole === 'admin') {
+    return (
+      <div className="bg-slate-900/80 border border-red-500/30 p-8 rounded-2xl text-center space-y-4 max-w-lg mx-auto shadow-2xl my-6 animate-fadeIn">
+        <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 text-rose-500 rounded-full flex items-center justify-center mx-auto animate-pulse">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
+        <h3 className="text-lg font-bold text-white tracking-tight">Complaint Submission Restricted</h3>
+        <p className="text-xs text-slate-300 leading-relaxed">
+          Official accounts cannot register citizen complaints. Please use a registered Citizen account or personal account.
+        </p>
+      </div>
+    );
+  }
+
   // Simulated GPS Geolocation grabber
   const handleAutoGPS = () => {
     // Generate slight noise around central coordinate (New Delhi)

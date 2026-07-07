@@ -62,51 +62,6 @@ export default function Header({
           {/* User Section & Notification Controls */}
           {user && (
             <div className="flex items-center gap-4">
-              {/* Dev Simulation switcher tool */}
-              {onQuickRoleSwitch && (
-                <div className={`hidden lg:flex items-center gap-1.5 p-1.5 rounded-xl text-[11px] backdrop-blur-sm border ${theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-white/5 border-white/10'}`}>
-                  <span className="text-slate-500 px-1.5 font-semibold font-mono uppercase tracking-wider text-[9px]">Demo Roles:</span>
-                  <button
-                    onClick={() => onQuickRoleSwitch('citizen')}
-                    className={`px-2.5 py-1 rounded-md transition-colors font-medium cursor-pointer ${user.role === 'citizen' ? 'bg-sky-500 text-slate-950 font-bold shadow-xs' : theme === 'light' ? 'text-slate-600 hover:bg-slate-200 hover:text-slate-900' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-                  >
-                    Citizen
-                  </button>
-                  
-                  {/* Officer role selector with dropdown for departments */}
-                  <div className="relative flex items-center gap-1">
-                    <button
-                      onClick={() => onQuickRoleSwitch('officer', user.departmentId || 'PWD')}
-                      className={`px-2.5 py-1 rounded-md transition-colors font-medium cursor-pointer ${user.role === 'officer' ? 'bg-sky-500 text-slate-950 font-bold shadow-xs' : theme === 'light' ? 'text-slate-600 hover:bg-slate-200 hover:text-slate-900' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-                    >
-                      Officer {user.role === 'officer' ? `(${user.departmentId})` : ''}
-                    </button>
-                    {user.role === 'officer' && (
-                      <select
-                        value={user.departmentId || 'PWD'}
-                        onChange={(e) => onQuickRoleSwitch('officer', e.target.value)}
-                        className={`text-[10px] py-0.5 px-1 rounded border font-semibold cursor-pointer outline-none ${theme === 'light' ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-slate-900 border-white/10 text-sky-400'}`}
-                      >
-                        <option value="PWD">PWD (Roads)</option>
-                        <option value="MUN">MUN (Garbage)</option>
-                        <option value="ELE">ELE (Lights)</option>
-                        <option value="WAT">WAT (Water)</option>
-                        <option value="POL">POL (Pollution)</option>
-                        <option value="HEA">HEA (Health)</option>
-                        <option value="AGR">AGR (Agri)</option>
-                      </select>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => onQuickRoleSwitch('admin')}
-                    className={`px-2.5 py-1 rounded-md transition-colors font-medium cursor-pointer ${user.role === 'admin' ? 'bg-sky-500 text-slate-950 font-bold shadow-xs' : theme === 'light' ? 'text-slate-600 hover:bg-slate-200 hover:text-slate-900' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-                  >
-                    Admin
-                  </button>
-                </div>
-              )}
-
               {/* Theme Toggle */}
               {onToggleTheme && (
                 <button

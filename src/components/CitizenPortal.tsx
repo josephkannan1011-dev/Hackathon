@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, ShieldAlert, Sparkles, MapPin, HelpCircle, FileText, CheckCircle2, Clock, Users, ArrowRight, Bell, Bot } from 'lucide-react';
 import { Complaint, User } from '../types';
 import VirtualMap from './VirtualMap';
@@ -12,6 +12,7 @@ interface CitizenPortalProps {
   onRefreshData: () => void;
   onSelectComplaint: (id: string) => void;
   onSupportComplaint: (id: string) => void;
+  overrideActiveTab?: 'nearby' | 'history' | 'emergency' | 'chatbot';
 }
 
 export default function CitizenPortal({
@@ -21,8 +22,15 @@ export default function CitizenPortal({
   onRefreshData,
   onSelectComplaint,
   onSupportComplaint,
+  overrideActiveTab,
 }: CitizenPortalProps) {
   const [activeTab, setActiveTab] = useState<'nearby' | 'history' | 'emergency' | 'chatbot'>('nearby');
+
+  useEffect(() => {
+    if (overrideActiveTab) {
+      setActiveTab(overrideActiveTab);
+    }
+  }, [overrideActiveTab]);
   const [showRaiseForm, setShowRaiseForm] = useState(false);
   const [prefillForm, setPrefillForm] = useState<{ title: string; description: string; category: string } | null>(null);
 
